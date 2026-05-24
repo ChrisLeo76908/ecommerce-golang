@@ -1,3 +1,10 @@
+/*
+@nombre:Christian David Muñoz Tonguino
+@fecha: 23/05/2026
+@descripción: Sistema de gestión E-Commerce desarrollado en GoLang y MySQL, que permite administrar productos,
+carrito de compras y panel administrativo mediante una interfaz web dinámica.
+*/
+
 package main
 
 import (
