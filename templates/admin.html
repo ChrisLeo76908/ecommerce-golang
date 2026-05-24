@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Administrador</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Panel Administrador</h1>
+    </header>
+
+  <nav class="menu">
+
+    <div>
+        <a href="/">Inicio</a>
+        <a href="/productos">Productos</a>
+        <a href="/carrito">Carrito</a>
+    </div>
+
+    <div>
+        <a href="/logout">Cerrar Sesión</a>
+    </div>
+
+</nav>
+
+    <div class="container">
+
+        <div class="card">
+
+            <h2>Agregar Producto</h2>
+
+            <form action="/guardar-producto" method="POST">
+
+                <input type="text" name="nombre" placeholder="Nombre del producto" required>
+
+                <br><br>
+
+                <input type="number" name="precio" placeholder="Precio" required>
+
+                <br><br>
+
+                <input type="text" name="imagen" placeholder="Ruta imagen" required>
+
+                <br><br>
+
+                <button type="submit">
+                    Guardar Producto
+                </button>
+
+            </form>
+
+        </div>
+
+        <br>
+
+        <h2>Productos Registrados</h2>
+
+        {{range .}}
+
+        <div class="card">
+
+            <img src="{{.Imagen}}" width="220">
+
+            <h3>{{.Nombre}}</h3>
+
+            <p>Precio: ${{.Precio}}</p>
+
+            <a href="/eliminar-producto?id={{.ID}}">
+                <button>
+                    Eliminar Producto
+                </button>
+            </a>
+
+        </div>
+
+        <br>
+
+        {{end}}
+
+    </div>
+
+</body>
+
+</html>

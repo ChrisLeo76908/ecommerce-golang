@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Carrito</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Carrito de Compras</h1>
+    </header>
+
+<nav class="menu">
+
+    <div>
+        <a href="/">Inicio</a>
+        <a href="/productos">Productos</a>
+        <a href="/carrito">Carrito</a>
+    </div>
+
+    <div>
+        <a href="/login">Login</a>
+    </div>
+
+</nav>
+
+    <div class="container">
+
+        <div class="card">
+
+            <h2>Productos agregados</h2>
+
+            {{range .Productos}}
+
+            <p>
+    {{.Nombre}} - ${{.Precio}}
+
+    <a href="/eliminar?id={{.ID}}">
+        <button>Eliminar</button>
+    </a>
+</p>
+
+            {{end}}
+
+            <hr>
+
+            <h3>Total: ${{.Total}}</h3>
+
+            <a href="/finalizar">
+    <button>Finalizar Compra</button>
+</a>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
