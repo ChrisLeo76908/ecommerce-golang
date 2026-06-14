@@ -14,16 +14,20 @@ El sistema permite gestionar una tienda virtual mediante una interfaz web dinám
 
 ## Funcionalidades principales
 
-- Visualización de productos
-- Carrito de compras dinámico
-- Agregar productos al carrito
-- Eliminar productos del carrito
-- Cálculo automático del total
-- Panel administrador
-- Inicio de sesión para administrador
-- Agregar nuevos productos
-- Eliminar productos del inventario
-- Conexión con base de datos MySQL
+- Gestión completa de productos: agregar, visualizar, editar y eliminar.
+- Conexión con base de datos MySQL para almacenar productos.
+- Carrito de compras dinámico.
+- Resumen final de compra agrupando productos repetidos.
+- Cálculo de cantidades, subtotales y total general.
+- Búsqueda de productos por nombre.
+- Ordenamiento de productos por precio.
+- Paginación del catálogo de productos.
+- Visualización de productos en cuadrícula.
+- Panel administrador protegido con inicio de sesión.
+- Implementación de encapsulación mediante métodos en Producto.
+- Implementación de la interfaz ProductoRepository.
+- Manejo de errores y validaciones.
+- Comentarios en funcionalidades complejas.
 
 ## Tecnologías utilizadas
 
