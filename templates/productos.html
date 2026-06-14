@@ -30,27 +30,45 @@
 
     <div class="container">
 
-        {{range .}}
+        <div class="productos-grid">
 
-        <div class="card">
+            {{range .Productos}}
 
-            <img src="{{.Imagen}}" width="250">
+            <div class="producto-card">
 
-            <h2>{{.Nombre}}</h2>
+                <img src="{{.Imagen}}" alt="{{.Nombre}}">
 
-            <p>Precio: ${{.Precio}}</p>
+                <h2>{{.Nombre}}</h2>
 
-            <a href="/agregar?id={{.ID}}">
-                <button>
-                    Agregar al carrito
-                </button>
-            </a>
+                <p>Precio: ${{.Precio}}</p>
+
+                <a href="/agregar?id={{.ID}}">
+                    <button>Agregar al carrito</button>
+                </a>
+
+            </div>
+
+            {{end}}
 
         </div>
 
-        <br>
+        <div class="paginacion">
 
-        {{end}}
+            {{if .PaginaAnterior}}
+            <a href="/productos?pagina={{.PaginaAnterior}}">
+                <button>Anterior</button>
+            </a>
+            {{end}}
+
+            <span>Página {{.PaginaActual}}</span>
+
+            {{if .PaginaSiguiente}}
+            <a href="/productos?pagina={{.PaginaSiguiente}}">
+                <button>Siguiente</button>
+            </a>
+            {{end}}
+
+        </div>
 
     </div>
 

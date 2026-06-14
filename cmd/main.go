@@ -42,7 +42,52 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 
 	listaProductos := productos.ObtenerProductos()
 
-	tmpl.Execute(w, listaProductos)
+	productosPorPagina := 50
+
+	paginaTexto := r.URL.Query().Get("pagina")
+
+	paginaActual := 1
+
+	if paginaTexto != "" {
+		paginaConvertida, err := strconv.Atoi(paginaTexto)
+
+		if err == nil && paginaConvertida > 0 {
+			paginaActual = paginaConvertida
+		}
+	}
+
+	inicio := (paginaActual - 1) * productosPorPagina
+	fin := inicio + productosPorPagina
+
+	if inicio > len(listaProductos) {
+		inicio = len(listaProductos)
+	}
+
+	if fin > len(listaProductos) {
+		fin = len(listaProductos)
+	}
+
+	productosPagina := listaProductos[inicio:fin]
+
+	var paginaAnterior int
+	var paginaSiguiente int
+
+	if paginaActual > 1 {
+		paginaAnterior = paginaActual - 1
+	}
+
+	if fin < len(listaProductos) {
+		paginaSiguiente = paginaActual + 1
+	}
+
+	datos := map[string]interface{}{
+		"Productos":       productosPagina,
+		"PaginaActual":    paginaActual,
+		"PaginaAnterior":  paginaAnterior,
+		"PaginaSiguiente": paginaSiguiente,
+	}
+
+	tmpl.Execute(w, datos)
 }
 
 func agregarProducto(w http.ResponseWriter, r *http.Request) {
