@@ -153,8 +153,9 @@ func EliminarProducto(id int) error {
 	return nil
 }
 
-// BuscarProductos devuelve los productos cuyo nombre
-// contiene el texto buscado por el usuario.
+// BuscarProductos filtra los productos por nombre.
+// La búsqueda no distingue entre mayúsculas y minúsculas,
+// permitiendo encontrar coincidencias parciales.
 func BuscarProductos(texto string) ([]Producto, error) {
 
 	productos, err := ObtenerProductos()
@@ -178,8 +179,8 @@ func BuscarProductos(texto string) ([]Producto, error) {
 	return resultado, nil
 }
 
-// OrdenarProductosPorPrecio ordena la lista de productos
-// según el criterio seleccionado por el usuario.
+// OrdenarProductosPorPrecio organiza la lista de productos
+// de menor a mayor o de mayor a menor según el criterio recibido.
 func OrdenarProductosPorPrecio(lista []Producto, orden string) []Producto {
 
 	if orden == "menor" {
@@ -227,6 +228,8 @@ func ObtenerProductoPorID(id int) (Producto, error) {
 }
 
 // ActualizarProducto modifica los datos de un producto existente.
+// Antes de ejecutar la actualización, valida que el producto tenga
+// un ID correcto y datos válidos.
 func ActualizarProducto(producto Producto) error {
 
 	if producto.ID <= 0 {

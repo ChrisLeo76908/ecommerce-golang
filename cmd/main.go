@@ -31,8 +31,9 @@ func inicio(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-// paginaProductos muestra los productos disponibles aplicando búsqueda y paginación.
-// Se muestran 50 productos por página, organizados en una cuadrícula de 5 columnas y 10 filas.
+// paginaProductos gestiona la visualización del catálogo.
+// Esta función integra búsqueda por nombre, ordenamiento por precio
+// y paginación para mostrar los productos de forma organizada.
 func paginaProductos(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("templates/productos.html")
@@ -42,6 +43,7 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Se obtiene el texto ingresado por el usuario en el buscador.
 	busqueda := r.URL.Query().Get("buscar")
 
 	var listaProductos []productos.Producto
@@ -57,6 +59,7 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Se obtiene el criterio de ordenamiento seleccionado por el usuario.
 	orden := r.URL.Query().Get("orden")
 
 	listaProductos = productos.OrdenarProductosPorPrecio(listaProductos, orden)
@@ -73,6 +76,7 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Se calculan los límites de inicio y fin para mostrar solo los productos de la página actual.
 	inicio := (paginaActual - 1) * productosPorPagina
 	fin := inicio + productosPorPagina
 
@@ -301,6 +305,9 @@ func eliminarProductoAdmin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
+// editarProductoPagina carga el formulario de edición.
+// Primero valida que exista una sesión de administrador,
+// luego busca el producto seleccionado por su ID.
 func editarProductoPagina(w http.ResponseWriter, r *http.Request) {
 
 	if !sesionIniciada {
@@ -334,6 +341,8 @@ func editarProductoPagina(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, producto)
 }
 
+// actualizarProducto recibe los datos modificados desde el formulario,
+// valida la información ingresada y actualiza el producto en MySQL.
 func actualizarProducto(w http.ResponseWriter, r *http.Request) {
 
 	if !sesionIniciada {
