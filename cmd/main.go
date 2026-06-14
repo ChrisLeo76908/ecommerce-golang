@@ -1,5 +1,5 @@
 /*
-@nombre:Christian David Muñoz Tonguino
+@nombre: Christian David Muñoz Tonguino
 @fecha: 23/05/2026
 @descripción: Sistema de gestión E-Commerce desarrollado en GoLang y MySQL, que permite administrar productos,
 carrito de compras y panel administrativo mediante una interfaz web dinámica.
@@ -24,28 +24,33 @@ func inicio(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/index.html")
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error al cargar la página de inicio", http.StatusInternalServerError)
 		return
 	}
 
 	tmpl.Execute(w, nil)
 }
 
+// paginaProductos muestra los productos disponibles aplicando paginación.
+// Se muestran 50 productos por página, organizados en una cuadrícula de 5 columnas y 10 filas.
 func paginaProductos(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("templates/productos.html")
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error al cargar la página de productos", http.StatusInternalServerError)
 		return
 	}
 
-	listaProductos := productos.ObtenerProductos()
+	listaProductos, err := productos.ObtenerProductos()
+
+	if err != nil {
+		http.Error(w, "Error al obtener productos desde la base de datos", http.StatusInternalServerError)
+		return
+	}
 
 	productosPorPagina := 50
-
 	paginaTexto := r.URL.Query().Get("pagina")
-
 	paginaActual := 1
 
 	if paginaTexto != "" {
@@ -90,16 +95,24 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, datos)
 }
 
+// agregarProducto recibe el ID del producto seleccionado,
+// lo busca en la base de datos y lo agrega temporalmente al carrito.
 func agregarProducto(w http.ResponseWriter, r *http.Request) {
 
 	id := r.URL.Query().Get("id")
 
-	listaProductos := productos.ObtenerProductos()
+	listaProductos, err := productos.ObtenerProductos()
+
+	if err != nil {
+		http.Error(w, "Error al obtener productos", http.StatusInternalServerError)
+		return
+	}
 
 	for _, producto := range listaProductos {
 
 		if id == strconv.Itoa(producto.ID) {
 			carrito.AgregarProducto(producto)
+			break
 		}
 	}
 
@@ -110,7 +123,12 @@ func eliminarProducto(w http.ResponseWriter, r *http.Request) {
 
 	idTexto := r.URL.Query().Get("id")
 
-	id, _ := strconv.Atoi(idTexto)
+	id, err := strconv.Atoi(idTexto)
+
+	if err != nil {
+		http.Error(w, "ID de producto inválido", http.StatusBadRequest)
+		return
+	}
 
 	carrito.EliminarProducto(id)
 
@@ -129,7 +147,7 @@ func carritoPagina(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/carrito.html")
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error al cargar el carrito", http.StatusInternalServerError)
 		return
 	}
 
@@ -144,20 +162,23 @@ func carritoPagina(w http.ResponseWriter, r *http.Request) {
 func adminPagina(w http.ResponseWriter, r *http.Request) {
 
 	if !sesionIniciada {
-
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
-
 		return
 	}
 
 	tmpl, err := template.ParseFiles("templates/admin.html")
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error al cargar el panel administrador", http.StatusInternalServerError)
 		return
 	}
 
-	listaProductos := productos.ObtenerProductos()
+	listaProductos, err := productos.ObtenerProductos()
+
+	if err != nil {
+		http.Error(w, "Error al obtener productos para administración", http.StatusInternalServerError)
+		return
+	}
 
 	tmpl.Execute(w, listaProductos)
 }
@@ -169,25 +190,20 @@ func loginPagina(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("templates/login.html")
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Error al cargar login", http.StatusInternalServerError)
 			return
 		}
 
 		tmpl.Execute(w, nil)
-
 		return
 	}
 
 	usuario := r.FormValue("usuario")
-
 	password := r.FormValue("password")
 
 	if usuario == "admin" && password == "1234" {
-
 		sesionIniciada = true
-
 		http.Redirect(w, r, "/admin", http.StatusSeeOther)
-
 		return
 	}
 
@@ -201,6 +217,8 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+// guardarProducto valida los datos enviados desde el formulario del administrador.
+// Si los datos son correctos, registra el producto en MySQL.
 func guardarProducto(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
@@ -209,21 +227,28 @@ func guardarProducto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nombre := r.FormValue("nombre")
-
 	precioTexto := r.FormValue("precio")
-
 	imagen := r.FormValue("imagen")
 
-	precio, _ := strconv.ParseFloat(precioTexto, 64)
+	precio, err := strconv.ParseFloat(precioTexto, 64)
+
+	if err != nil {
+		http.Error(w, "El precio ingresado no es válido", http.StatusBadRequest)
+		return
+	}
 
 	nuevoProducto := productos.Producto{
-		ID:     len(productos.ObtenerProductos()) + 1,
 		Nombre: nombre,
 		Precio: precio,
 		Imagen: imagen,
 	}
 
-	productos.AgregarNuevoProducto(nuevoProducto)
+	err = productos.AgregarNuevoProducto(nuevoProducto)
+
+	if err != nil {
+		http.Error(w, "Error al guardar producto: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	http.Redirect(w, r, "/productos", http.StatusSeeOther)
 }
@@ -232,9 +257,19 @@ func eliminarProductoAdmin(w http.ResponseWriter, r *http.Request) {
 
 	idTexto := r.URL.Query().Get("id")
 
-	id, _ := strconv.Atoi(idTexto)
+	id, err := strconv.Atoi(idTexto)
 
-	productos.EliminarProducto(id)
+	if err != nil {
+		http.Error(w, "ID inválido para eliminar producto", http.StatusBadRequest)
+		return
+	}
+
+	err = productos.EliminarProducto(id)
+
+	if err != nil {
+		http.Error(w, "Error al eliminar producto: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
@@ -242,7 +277,6 @@ func eliminarProductoAdmin(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	db := database.Conexion()
-
 	defer db.Close()
 
 	log.Println("Base de datos conectada correctamente")

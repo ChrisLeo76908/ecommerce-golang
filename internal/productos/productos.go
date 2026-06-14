@@ -2,6 +2,7 @@ package productos
 
 import (
 	"ecommerce/internal/database"
+	"errors"
 )
 
 type Producto struct {
@@ -11,57 +12,121 @@ type Producto struct {
 	Imagen string
 }
 
-func ObtenerProductos() []Producto {
+// ProductoRepository define las operaciones que debe cumplir
+// cualquier módulo encargado de gestionar productos.
+type ProductoRepository interface {
+	ObtenerProductos() ([]Producto, error)
+	AgregarNuevoProducto(producto Producto) error
+	EliminarProducto(id int) error
+}
 
-	db := database.Conexion()
+// ValidarProducto aplica encapsulación al controlar que los datos
+// del producto sean correctos antes de guardarlos en la base de datos.
+func ValidarProducto(producto Producto) error {
 
-	rows, err := db.Query("SELECT * FROM productos")
-
-	if err != nil {
-		return nil
+	if producto.Nombre == "" {
+		return errors.New("el nombre del producto no puede estar vacío")
 	}
 
-	var productos []Producto
+	if producto.Precio <= 0 {
+		return errors.New("el precio del producto debe ser mayor a cero")
+	}
+
+	if producto.Imagen == "" {
+		producto.Imagen = "/static/img/default.jpg"
+	}
+
+	return nil
+}
+
+// ObtenerProductos consulta la base de datos MySQL y devuelve
+// todos los productos registrados en el sistema.
+func ObtenerProductos() ([]Producto, error) {
+
+	db := database.Conexion()
+	defer db.Close()
+
+	rows, err := db.Query("SELECT id, nombre, precio, imagen FROM productos")
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var listaProductos []Producto
 
 	for rows.Next() {
 
 		var producto Producto
 
-		rows.Scan(
+		err := rows.Scan(
 			&producto.ID,
 			&producto.Nombre,
 			&producto.Precio,
 			&producto.Imagen,
 		)
 
-		productos = append(productos, producto)
+		if err != nil {
+			return nil, err
+		}
+
+		listaProductos = append(listaProductos, producto)
 	}
 
-	return productos
+	return listaProductos, nil
 }
 
-func AgregarNuevoProducto(producto Producto) {
+// AgregarNuevoProducto valida y registra un nuevo producto
+// dentro de la tabla productos de MySQL.
+func AgregarNuevoProducto(producto Producto) error {
+
+	err := ValidarProducto(producto)
+
+	if err != nil {
+		return err
+	}
 
 	db := database.Conexion()
+	defer db.Close()
 
 	query := `
 	INSERT INTO productos(nombre, precio, imagen)
 	VALUES (?, ?, ?)
 	`
 
-	db.Exec(
+	_, err = db.Exec(
 		query,
 		producto.Nombre,
 		producto.Precio,
 		producto.Imagen,
 	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func EliminarProducto(id int) {
+// EliminarProducto elimina un producto de la base de datos
+// utilizando su ID como identificador principal.
+func EliminarProducto(id int) error {
+
+	if id <= 0 {
+		return errors.New("el ID del producto no es válido")
+	}
 
 	db := database.Conexion()
+	defer db.Close()
 
 	query := "DELETE FROM productos WHERE id = ?"
 
-	db.Exec(query, id)
+	_, err := db.Exec(query, id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
