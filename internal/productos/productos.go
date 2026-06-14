@@ -3,6 +3,7 @@ package productos
 import (
 	"ecommerce/internal/database"
 	"errors"
+	"sort"
 	"strings"
 )
 
@@ -175,4 +176,24 @@ func BuscarProductos(texto string) ([]Producto, error) {
 	}
 
 	return resultado, nil
+}
+
+// OrdenarProductosPorPrecio ordena la lista de productos
+// según el criterio seleccionado por el usuario.
+func OrdenarProductosPorPrecio(lista []Producto, orden string) []Producto {
+
+	if orden == "menor" {
+
+		sort.Slice(lista, func(i, j int) bool {
+			return lista[i].Precio < lista[j].Precio
+		})
+
+	} else if orden == "mayor" {
+
+		sort.Slice(lista, func(i, j int) bool {
+			return lista[i].Precio > lista[j].Precio
+		})
+	}
+
+	return lista
 }

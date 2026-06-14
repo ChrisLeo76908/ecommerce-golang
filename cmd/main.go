@@ -57,6 +57,10 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	orden := r.URL.Query().Get("orden")
+
+	listaProductos = productos.OrdenarProductosPorPrecio(listaProductos, orden)
+
 	productosPorPagina := 50
 	paginaTexto := r.URL.Query().Get("pagina")
 	paginaActual := 1
@@ -99,8 +103,8 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		"PaginaAnterior":  paginaAnterior,
 		"PaginaSiguiente": paginaSiguiente,
 		"Busqueda":        busqueda,
+		"Orden":           orden,
 	}
-
 	tmpl.Execute(w, datos)
 }
 
