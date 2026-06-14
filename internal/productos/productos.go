@@ -197,3 +197,68 @@ func OrdenarProductosPorPrecio(lista []Producto, orden string) []Producto {
 
 	return lista
 }
+
+// ObtenerProductoPorID busca un producto específico por su ID.
+func ObtenerProductoPorID(id int) (Producto, error) {
+
+	if id <= 0 {
+		return Producto{}, errors.New("el ID del producto no es válido")
+	}
+
+	db := database.Conexion()
+	defer db.Close()
+
+	query := "SELECT id, nombre, precio, imagen FROM productos WHERE id = ?"
+
+	var producto Producto
+
+	err := db.QueryRow(query, id).Scan(
+		&producto.ID,
+		&producto.Nombre,
+		&producto.Precio,
+		&producto.Imagen,
+	)
+
+	if err != nil {
+		return Producto{}, err
+	}
+
+	return producto, nil
+}
+
+// ActualizarProducto modifica los datos de un producto existente.
+func ActualizarProducto(producto Producto) error {
+
+	if producto.ID <= 0 {
+		return errors.New("el ID del producto no es válido")
+	}
+
+	err := ValidarProducto(producto)
+
+	if err != nil {
+		return err
+	}
+
+	db := database.Conexion()
+	defer db.Close()
+
+	query := `
+	UPDATE productos
+	SET nombre = ?, precio = ?, imagen = ?
+	WHERE id = ?
+	`
+
+	_, err = db.Exec(
+		query,
+		producto.Nombre,
+		producto.Precio,
+		producto.Imagen,
+		producto.ID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

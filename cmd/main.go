@@ -287,6 +287,87 @@ func eliminarProductoAdmin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
+func editarProductoPagina(w http.ResponseWriter, r *http.Request) {
+
+	if !sesionIniciada {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	idTexto := r.URL.Query().Get("id")
+
+	id, err := strconv.Atoi(idTexto)
+
+	if err != nil {
+		http.Error(w, "ID inválido para editar producto", http.StatusBadRequest)
+		return
+	}
+
+	producto, err := productos.ObtenerProductoPorID(id)
+
+	if err != nil {
+		http.Error(w, "Producto no encontrado", http.StatusNotFound)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("templates/editar.html")
+
+	if err != nil {
+		http.Error(w, "Error al cargar la página de edición", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl.Execute(w, producto)
+}
+
+func actualizarProducto(w http.ResponseWriter, r *http.Request) {
+
+	if !sesionIniciada {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
+		return
+	}
+
+	idTexto := r.FormValue("id")
+	nombre := r.FormValue("nombre")
+	precioTexto := r.FormValue("precio")
+	imagen := r.FormValue("imagen")
+
+	id, err := strconv.Atoi(idTexto)
+
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	precio, err := strconv.ParseFloat(precioTexto, 64)
+
+	if err != nil {
+		http.Error(w, "Precio inválido", http.StatusBadRequest)
+		return
+	}
+
+	productoActualizado := productos.Producto{
+		ID:     id,
+		Nombre: nombre,
+		Precio: precio,
+		Imagen: imagen,
+	}
+
+	err = productos.ActualizarProducto(productoActualizado)
+
+	if err != nil {
+		http.Error(w, "Error al actualizar producto: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
 func main() {
 
 	db := database.Conexion()
@@ -307,6 +388,8 @@ func main() {
 	http.HandleFunc("/admin", adminPagina)
 	http.HandleFunc("/guardar-producto", guardarProducto)
 	http.HandleFunc("/eliminar-producto", eliminarProductoAdmin)
+	http.HandleFunc("/editar-producto", editarProductoPagina)
+	http.HandleFunc("/actualizar-producto", actualizarProducto)
 
 	http.HandleFunc("/login", loginPagina)
 	http.HandleFunc("/logout", logout)

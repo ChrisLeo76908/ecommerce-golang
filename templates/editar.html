@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Producto</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Editar Producto</h1>
+    </header>
+
+<nav class="menu">
+
+    <div>
+        <a href="/">Inicio</a>
+        <a href="/productos">Productos</a>
+        <a href="/carrito">Carrito</a>
+    </div>
+
+    <div>
+        <a href="/logout">Cerrar Sesión</a>
+    </div>
+
+</nav>
+
+    <div class="container">
+
+        <div class="card">
+
+            <h2>Modificar Producto</h2>
+
+            <form action="/actualizar-producto" method="POST">
+
+                <input type="hidden" name="id" value="{{.ID}}">
+
+                <input type="text" name="nombre" value="{{.Nombre}}" required>
+
+                <br><br>
+
+                <input type="number" name="precio" value="{{.Precio}}" required>
+
+                <br><br>
+
+                <input type="text" name="imagen" value="{{.Imagen}}" required>
+
+                <br><br>
+
+                <button type="submit">
+                    Actualizar Producto
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
