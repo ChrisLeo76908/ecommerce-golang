@@ -150,9 +150,23 @@ func eliminarProducto(w http.ResponseWriter, r *http.Request) {
 
 func finalizarCompra(w http.ResponseWriter, r *http.Request) {
 
+	resumen, total := carrito.GenerarResumen()
+
+	tmpl, err := template.ParseFiles("templates/resumen.html")
+
+	if err != nil {
+		http.Error(w, "Error al cargar el resumen de compra", http.StatusInternalServerError)
+		return
+	}
+
+	datos := map[string]interface{}{
+		"Productos": resumen,
+		"Total":     total,
+	}
+
 	carrito.VaciarCarrito()
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	tmpl.Execute(w, datos)
 }
 
 func carritoPagina(w http.ResponseWriter, r *http.Request) {
@@ -368,6 +382,23 @@ func actualizarProducto(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
+func resumenCompraPagina(w http.ResponseWriter, r *http.Request) {
+
+	tmpl, err := template.ParseFiles("templates/resumen.html")
+
+	if err != nil {
+		http.Error(w, "Error al cargar el resumen de compra", http.StatusInternalServerError)
+		return
+	}
+
+	datos := map[string]interface{}{
+		"Productos": carrito.UltimoResumen,
+		"Total":     carrito.UltimoTotal,
+	}
+
+	tmpl.Execute(w, datos)
+}
+
 func main() {
 
 	db := database.Conexion()
@@ -384,6 +415,7 @@ func main() {
 	http.HandleFunc("/agregar", agregarProducto)
 	http.HandleFunc("/eliminar", eliminarProducto)
 	http.HandleFunc("/finalizar", finalizarCompra)
+	http.HandleFunc("/resumen", resumenCompraPagina)
 
 	http.HandleFunc("/admin", adminPagina)
 	http.HandleFunc("/guardar-producto", guardarProducto)

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Resumen de Compra</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Resumen de Compra</h1>
+    </header>
+
+    <nav class="menu">
+
+        <div>
+            <a href="/">Inicio</a>
+            <a href="/productos">Productos</a>
+            <a href="/carrito">Carrito</a>
+        </div>
+
+        <div>
+            <a href="/login">Login</a>
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="card">
+
+            <h2>Compra finalizada correctamente</h2>
+
+            <p>Detalle de productos comprados:</p>
+
+            {{range .Productos}}
+
+            <p>
+                {{.Nombre}} — Cantidad: {{.Cantidad}} — Precio unitario: ${{.Precio}} — Subtotal: ${{.Subtotal}}
+            </p>
+
+            {{end}}
+
+            <hr>
+
+            <h3>Total pagado: ${{.Total}}</h3>
+
+            <a href="/productos">
+                <button>Seguir comprando</button>
+            </a>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
