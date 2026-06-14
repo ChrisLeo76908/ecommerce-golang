@@ -31,7 +31,7 @@ func inicio(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-// paginaProductos muestra los productos disponibles aplicando paginación.
+// paginaProductos muestra los productos disponibles aplicando búsqueda y paginación.
 // Se muestran 50 productos por página, organizados en una cuadrícula de 5 columnas y 10 filas.
 func paginaProductos(w http.ResponseWriter, r *http.Request) {
 
@@ -42,7 +42,15 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	listaProductos, err := productos.ObtenerProductos()
+	busqueda := r.URL.Query().Get("buscar")
+
+	var listaProductos []productos.Producto
+
+	if busqueda != "" {
+		listaProductos, err = productos.BuscarProductos(busqueda)
+	} else {
+		listaProductos, err = productos.ObtenerProductos()
+	}
 
 	if err != nil {
 		http.Error(w, "Error al obtener productos desde la base de datos", http.StatusInternalServerError)
@@ -90,6 +98,7 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		"PaginaActual":    paginaActual,
 		"PaginaAnterior":  paginaAnterior,
 		"PaginaSiguiente": paginaSiguiente,
+		"Busqueda":        busqueda,
 	}
 
 	tmpl.Execute(w, datos)

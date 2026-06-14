@@ -3,6 +3,7 @@ package productos
 import (
 	"ecommerce/internal/database"
 	"errors"
+	"strings"
 )
 
 type Producto struct {
@@ -149,4 +150,29 @@ func EliminarProducto(id int) error {
 	}
 
 	return nil
+}
+
+// BuscarProductos devuelve los productos cuyo nombre
+// contiene el texto buscado por el usuario.
+func BuscarProductos(texto string) ([]Producto, error) {
+
+	productos, err := ObtenerProductos()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var resultado []Producto
+
+	for _, producto := range productos {
+
+		if strings.Contains(
+			strings.ToLower(producto.Nombre),
+			strings.ToLower(texto),
+		) {
+			resultado = append(resultado, producto)
+		}
+	}
+
+	return resultado, nil
 }
