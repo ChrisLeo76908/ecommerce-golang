@@ -12,6 +12,26 @@ type Producto struct {
 	Imagen string
 }
 
+// ObtenerID devuelve el identificador del producto.
+func (p Producto) ObtenerID() int {
+	return p.ID
+}
+
+// ObtenerNombre devuelve el nombre del producto.
+func (p Producto) ObtenerNombre() string {
+	return p.Nombre
+}
+
+// ObtenerPrecio devuelve el precio del producto.
+func (p Producto) ObtenerPrecio() float64 {
+	return p.Precio
+}
+
+// ObtenerImagen devuelve la ruta de imagen del producto.
+func (p Producto) ObtenerImagen() string {
+	return p.Imagen
+}
+
 // ProductoRepository define las operaciones que debe cumplir
 // cualquier módulo encargado de gestionar productos.
 type ProductoRepository interface {
