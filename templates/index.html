@@ -14,19 +14,28 @@
         <h1>Bienvenido a Mi E-Commerce</h1>
     </header>
 
-    <nav class="menu">
+   <nav class="menu">
 
-        <div>
-            <a href="/">Inicio</a>
-            <a href="/productos">Productos</a>
-            <a href="/carrito">Carrito</a>
-        </div>
+    <div>
+        <a href="/">Inicio</a>
+        <a href="/productos">Productos</a>
+        <a href="/carrito">Carrito</a>
+    </div>
 
-        <div>
+    <div>
+        {{if .ClienteActivo}}
+
+            <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+            <a href="/logout-cliente">Cerrar Sesión</a>
+
+        {{else}}
+
             <a href="/login">Login</a>
-        </div>
 
-    </nav>
+        {{end}}
+    </div>
+
+</nav>
 
     <div class="container">
 

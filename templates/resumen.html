@@ -10,9 +10,9 @@
 
 <body>
     <!--
-Muestra el resumen final de la compra,
-agrupando productos repetidos y calculando subtotales.
--->
+    Muestra el resumen final de la compra,
+    agrupando productos repetidos y calculando subtotal, IVA y total.
+    -->
 
     <header>
         <h1>Resumen de Compra</h1>
@@ -27,7 +27,18 @@ agrupando productos repetidos y calculando subtotales.
         </div>
 
         <div>
-            <a href="/login">Login</a>
+            <div>
+                {{if .ClienteActivo}}
+                    
+                    <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+                    <a href="/logout-cliente">Cerrar Sesión</a>
+                    
+                {{else}}
+                
+                    <a href="/login">Login</a>
+                    
+                {{end}}
+            </div>
         </div>
 
     </nav>
@@ -38,19 +49,41 @@ agrupando productos repetidos y calculando subtotales.
 
             <h2>Compra finalizada correctamente</h2>
 
+            <p><strong>Cliente:</strong> {{.Cliente}}</p>
+
             <p>Detalle de productos comprados:</p>
 
-            {{range .Productos}}
+            <table class="tabla-resumen">
 
-            <p>
-                {{.Nombre}} — Cantidad: {{.Cantidad}} — Precio unitario: ${{.Precio}} — Subtotal: ${{.Subtotal}}
-            </p>
+                <tr>
+                    <th>Cantidad</th>
+                    <th>Producto</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                </tr>
 
-            {{end}}
+                {{range .Productos}}
 
-            <hr>
+                <tr>
+                    <td>{{.Cantidad}}</td>
+                    <td>{{.Nombre}}</td>
+                    <td>${{printf "%.2f" .Precio}}</td>
+                    <td>${{printf "%.2f" .Subtotal}}</td>
+                </tr>
 
-            <h3>Total pagado: ${{.Total}}</h3>
+                {{end}}
+
+            </table>
+
+            <div class="totales-compra">
+
+                <p><strong>Subtotal:</strong> ${{printf "%.2f" .Subtotal}}</p>
+
+                <p><strong>IVA 15%:</strong> ${{printf "%.2f" .IVA}}</p>
+
+                <h3>Total: ${{printf "%.2f" .Total}}</h3>
+
+            </div>
 
             <a href="/productos">
                 <button>Seguir comprando</button>

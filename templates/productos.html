@@ -27,8 +27,17 @@ Incluye búsqueda, ordenamiento y paginación.
         </div>
 
         <div>
+            {{if .ClienteActivo}}
+            
+            <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+            <a href="/logout-cliente">Cerrar Sesión</a>
+            
+        {{else}}
+        
             <a href="/login">Login</a>
-        </div>
+
+        {{end}}
+    </div>
 
     </nav>
 
@@ -66,17 +75,17 @@ Incluye búsqueda, ordenamiento y paginación.
             {{range .Productos}}
 
             <div class="producto-card">
-
+                
                 <img src="{{.Imagen}}" alt="{{.Nombre}}">
-
+                
                 <h2>{{.Nombre}}</h2>
-
+                
                 <p>Precio: ${{.Precio}}</p>
-
-                <a href="/agregar?id={{.ID}}">
+                
+                <a href="/agregar?id={{.ID}}&buscar={{$.Busqueda}}&orden={{$.Orden}}&pagina={{$.PaginaActual}}">
                     <button>Agregar al carrito</button>
                 </a>
-
+            
             </div>
 
             {{end}}

@@ -13,6 +13,8 @@ type ResumenItem struct {
 }
 
 var UltimoResumen []ResumenItem
+var UltimoSubtotal float64
+var UltimoIVA float64
 var UltimoTotal float64
 
 func AgregarProducto(producto productos.Producto) {
@@ -52,12 +54,12 @@ func EliminarProducto(id int) {
 	Carrito = nuevoCarrito
 }
 
-// GenerarResumen agrupa productos repetidos y calcula cantidad, subtotal y total.
-func GenerarResumen() ([]ResumenItem, float64) {
+// GenerarResumen agrupa productos repetidos y calcula subtotal, IVA y total final.
+func GenerarResumen() ([]ResumenItem, float64, float64, float64) {
 
 	resumenMapa := make(map[int]ResumenItem)
 
-	var total float64
+	var subtotal float64
 
 	for _, producto := range Carrito {
 
@@ -77,7 +79,7 @@ func GenerarResumen() ([]ResumenItem, float64) {
 		}
 
 		resumenMapa[producto.ID] = item
-		total += producto.Precio
+		subtotal += producto.Precio
 	}
 
 	var resumen []ResumenItem
@@ -86,10 +88,15 @@ func GenerarResumen() ([]ResumenItem, float64) {
 		resumen = append(resumen, item)
 	}
 
+	iva := subtotal * 0.15
+	total := subtotal + iva
+
 	UltimoResumen = resumen
+	UltimoSubtotal = subtotal
+	UltimoIVA = iva
 	UltimoTotal = total
 
-	return resumen, total
+	return resumen, subtotal, iva, total
 }
 
 func VaciarCarrito() {

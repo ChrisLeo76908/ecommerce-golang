@@ -14,8 +14,10 @@ package main
 
 import (
 	"ecommerce/internal/carrito"
+	"ecommerce/internal/compras"
 	"ecommerce/internal/database"
 	"ecommerce/internal/productos"
+	"ecommerce/internal/usuarios"
 	"encoding/json"
 	"html/template"
 	"log"
@@ -24,6 +26,7 @@ import (
 )
 
 var sesionIniciada bool
+var clienteActual usuarios.Usuario
 
 func inicio(w http.ResponseWriter, r *http.Request) {
 
@@ -34,7 +37,7 @@ func inicio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl.Execute(w, nil)
+	tmpl.Execute(w, datosCliente())
 }
 
 // paginaProductos gestiona la visualización del catálogo.
@@ -114,6 +117,8 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		"PaginaSiguiente": paginaSiguiente,
 		"Busqueda":        busqueda,
 		"Orden":           orden,
+		"ClienteActivo":   clienteActual.ID != 0,
+		"ClienteNombre":   clienteActual.Nombre,
 	}
 	tmpl.Execute(w, datos)
 }
@@ -125,10 +130,6 @@ func agregarProducto(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
 	listaProductos, err := productos.ObtenerProductos()
-
-	orden := r.URL.Query().Get("orden")
-
-	listaProductos = productos.OrdenarProductosAdmin(listaProductos, orden)
 
 	if err != nil {
 		http.Error(w, "Error al obtener productos", http.StatusInternalServerError)
@@ -143,7 +144,14 @@ func agregarProducto(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/productos", http.StatusSeeOther)
+	busqueda := r.URL.Query().Get("buscar")
+	orden := r.URL.Query().Get("orden")
+	pagina := r.URL.Query().Get("pagina")
+
+	url := "/productos?buscar=" + busqueda + "&orden=" + orden + "&pagina=" + pagina
+
+	http.Redirect(w, r, url, http.StatusSeeOther)
+
 }
 
 func eliminarProducto(w http.ResponseWriter, r *http.Request) {
@@ -164,7 +172,24 @@ func eliminarProducto(w http.ResponseWriter, r *http.Request) {
 
 func finalizarCompra(w http.ResponseWriter, r *http.Request) {
 
-	resumen, total := carrito.GenerarResumen()
+	if clienteActual.ID == 0 {
+		http.Redirect(w, r, "/login-cliente", http.StatusSeeOther)
+		return
+	}
+
+	resumen, subtotal, iva, total := carrito.GenerarResumen()
+
+	if len(resumen) == 0 {
+		http.Redirect(w, r, "/carrito", http.StatusSeeOther)
+		return
+	}
+
+	err := compras.RegistrarCompra(clienteActual.ID, resumen, subtotal, iva, total)
+
+	if err != nil {
+		http.Error(w, "Error al registrar la compra", http.StatusInternalServerError)
+		return
+	}
 
 	tmpl, err := template.ParseFiles("templates/resumen.html")
 
@@ -174,8 +199,13 @@ func finalizarCompra(w http.ResponseWriter, r *http.Request) {
 	}
 
 	datos := map[string]interface{}{
-		"Productos": resumen,
-		"Total":     total,
+		"Productos":     resumen,
+		"Subtotal":      subtotal,
+		"IVA":           iva,
+		"Total":         total,
+		"Cliente":       clienteActual.Nombre,
+		"ClienteActivo": true,
+		"ClienteNombre": clienteActual.Nombre,
 	}
 
 	carrito.VaciarCarrito()
@@ -193,8 +223,10 @@ func carritoPagina(w http.ResponseWriter, r *http.Request) {
 	}
 
 	datos := map[string]interface{}{
-		"Productos": carrito.ObtenerCarrito(),
-		"Total":     carrito.CalcularTotal(),
+		"Productos":     carrito.ObtenerCarrito(),
+		"Total":         carrito.CalcularTotal(),
+		"ClienteActivo": clienteActual.ID != 0,
+		"ClienteNombre": clienteActual.Nombre,
 	}
 
 	tmpl.Execute(w, datos)
@@ -214,7 +246,7 @@ func sesionAdminActiva(r *http.Request) bool {
 func adminPagina(w http.ResponseWriter, r *http.Request) {
 
 	if !sesionAdminActiva(r) {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		http.Redirect(w, r, "/login-admin", http.StatusSeeOther)
 		return
 	}
 
@@ -232,7 +264,12 @@ func adminPagina(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	orden := r.URL.Query().Get("orden")
+
+	listaProductos = productos.OrdenarProductosAdmin(listaProductos, orden)
+
 	tmpl.Execute(w, listaProductos)
+
 }
 
 func loginPagina(w http.ResponseWriter, r *http.Request) {
@@ -246,7 +283,7 @@ func loginPagina(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		tmpl.Execute(w, nil)
+		tmpl.Execute(w, datosCliente())
 		return
 	}
 
@@ -259,6 +296,7 @@ func loginPagina(w http.ResponseWriter, r *http.Request) {
 			Value: "activo",
 			Path:  "/",
 		})
+
 		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 		return
 	}
@@ -341,7 +379,7 @@ func eliminarProductoAdmin(w http.ResponseWriter, r *http.Request) {
 func editarProductoPagina(w http.ResponseWriter, r *http.Request) {
 
 	if !sesionAdminActiva(r) {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		http.Redirect(w, r, "/login-admin", http.StatusSeeOther)
 		return
 	}
 
@@ -376,7 +414,7 @@ func editarProductoPagina(w http.ResponseWriter, r *http.Request) {
 func actualizarProducto(w http.ResponseWriter, r *http.Request) {
 
 	if !sesionAdminActiva(r) {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		http.Redirect(w, r, "/login-admin", http.StatusSeeOther)
 		return
 	}
 
@@ -587,10 +625,102 @@ func apiObtenerResumen(w http.ResponseWriter, r *http.Request) {
 
 	datos := map[string]interface{}{
 		"productos": carrito.UltimoResumen,
+		"subtotal":  carrito.UltimoSubtotal,
+		"iva":       carrito.UltimoIVA,
 		"total":     carrito.UltimoTotal,
 	}
 
 	responderJSON(w, datos, http.StatusOK)
+}
+
+func registroClientePagina(w http.ResponseWriter, r *http.Request) {
+
+	tmpl, err := template.ParseFiles("templates/registro.html")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl.Execute(w, nil)
+}
+
+func registrarCliente(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Redirect(w, r, "/registro-cliente", http.StatusSeeOther)
+		return
+	}
+
+	usuario := usuarios.Usuario{
+		Nombre:   r.FormValue("nombre"),
+		Correo:   r.FormValue("correo"),
+		Password: r.FormValue("password"),
+	}
+
+	err := usuarios.RegistrarUsuario(usuario)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	http.Redirect(w, r, "/login-cliente", http.StatusSeeOther)
+}
+
+func loginClientePagina(w http.ResponseWriter, r *http.Request) {
+
+	tmpl, err := template.ParseFiles("templates/login-cliente.html")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl.Execute(w, nil)
+}
+
+func validarCliente(w http.ResponseWriter, r *http.Request) {
+
+	correo := r.FormValue("correo")
+	password := r.FormValue("password")
+
+	usuario, err := usuarios.ValidarUsuario(correo, password)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	clienteActual = usuario
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func accesoPagina(w http.ResponseWriter, r *http.Request) {
+
+	tmpl, err := template.ParseFiles("templates/acceso.html")
+
+	if err != nil {
+		http.Error(w, "Error al cargar página de acceso", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl.Execute(w, nil)
+}
+
+func logoutCliente(w http.ResponseWriter, r *http.Request) {
+
+	clienteActual = usuarios.Usuario{}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func datosCliente() map[string]interface{} {
+	return map[string]interface{}{
+		"ClienteActivo": clienteActual.ID != 0,
+		"ClienteNombre": clienteActual.Nombre,
+	}
 }
 
 func main() {
@@ -617,7 +747,8 @@ func main() {
 	http.HandleFunc("/editar-producto", editarProductoPagina)
 	http.HandleFunc("/actualizar-producto", actualizarProducto)
 
-	http.HandleFunc("/login", loginPagina)
+	http.HandleFunc("/login", accesoPagina)
+	http.HandleFunc("/login-admin", loginPagina)
 	http.HandleFunc("/logout", logout)
 
 	// Servicios Web JSON
@@ -629,6 +760,12 @@ func main() {
 	http.HandleFunc("/api/eliminar-producto", apiEliminarProducto)
 	http.HandleFunc("/api/carrito", apiObtenerCarrito)
 	http.HandleFunc("/api/resumen", apiObtenerResumen)
+
+	http.HandleFunc("/registro-cliente", registroClientePagina)
+	http.HandleFunc("/registrar-cliente", registrarCliente)
+	http.HandleFunc("/login-cliente", loginClientePagina)
+	http.HandleFunc("/validar-cliente", validarCliente)
+	http.HandleFunc("/logout-cliente", logoutCliente)
 
 	log.Println("Servidor ejecutándose en http://localhost:8080")
 

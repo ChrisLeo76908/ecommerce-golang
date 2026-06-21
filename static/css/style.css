@@ -155,3 +155,34 @@ input {
     border-radius: 8px;
     cursor: pointer;
 }
+
+.tabla-resumen {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tabla-resumen th,
+.tabla-resumen td {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: center;
+}
+
+.tabla-resumen th {
+    background-color: #f2f2f2;
+}
+
+.totales-compra {
+    text-align: right;
+    margin-top: 25px;
+    font-size: 18px;
+}
+
+.menu .usuario-activo,
+nav .usuario-activo,
+.usuario-activo {
+    color: white !important;
+    font-weight: bold;
+    margin-right: 15px;
+}

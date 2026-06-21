@@ -27,7 +27,17 @@ al carrito y el total acumulado.
     </div>
 
     <div>
-        <a href="/login">Login</a>
+        
+        {{if .ClienteActivo}}
+        
+            <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+            <a href="/logout-cliente">Cerrar Sesión</a>
+
+        {{else}}
+
+            <a href="/login">Login</a>
+
+        {{end}}
     </div>
 
 </nav>

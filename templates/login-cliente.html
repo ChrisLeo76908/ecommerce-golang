@@ -3,57 +3,40 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-
+    <title>Login Cliente</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
 <body>
 
     <header>
-        <h1>Iniciar Sesión</h1>
+        <h1>Inicio de Sesión Cliente</h1>
     </header>
 
     <nav class="menu">
-
         <div>
             <a href="/">Inicio</a>
             <a href="/productos">Productos</a>
-            <a href="/carrito">Carrito</a>
+            <a href="/registro-cliente">Registrarse</a>
         </div>
-
-        <div>
-            <a href="/">Inicio</a>
-        </div>
-
     </nav>
 
     <div class="container">
-
         <div class="card">
 
-            <h2>Administrador</h2>
+            <h2>Ingresar</h2>
 
-            <form action="/login-admin" method="POST">
-                
-                <input type="text" name="usuario" placeholder="Usuario" required>
-                
+            <form action="/validar-cliente" method="POST">
+                <input type="email" name="correo" placeholder="Correo electrónico" required>
                 <br><br>
-                
+
                 <input type="password" name="password" placeholder="Contraseña" required>
-                
                 <br><br>
-                
-                <button type="submit">
-                    
-                    Ingresar
-                
-                </button>
-            
+
+                <button type="submit">Iniciar Sesión</button>
             </form>
 
         </div>
-
     </div>
 
 </body>
