@@ -8,10 +8,11 @@ import (
 )
 
 type Producto struct {
-	ID     int
-	Nombre string
-	Precio float64
-	Imagen string
+	ID            int
+	Nombre        string
+	Precio        float64
+	Imagen        string
+	FechaCreacion string
 }
 
 // ObtenerID devuelve el identificador del producto.
@@ -68,7 +69,7 @@ func ObtenerProductos() ([]Producto, error) {
 	db := database.Conexion()
 	defer db.Close()
 
-	rows, err := db.Query("SELECT id, nombre, precio, imagen FROM productos")
+	rows, err := db.Query("SELECT id, nombre, precio, imagen, fecha_creacion FROM productos")
 
 	if err != nil {
 		return nil, err
@@ -87,6 +88,7 @@ func ObtenerProductos() ([]Producto, error) {
 			&producto.Nombre,
 			&producto.Precio,
 			&producto.Imagen,
+			&producto.FechaCreacion,
 		)
 
 		if err != nil {
@@ -209,7 +211,7 @@ func ObtenerProductoPorID(id int) (Producto, error) {
 	db := database.Conexion()
 	defer db.Close()
 
-	query := "SELECT id, nombre, precio, imagen FROM productos WHERE id = ?"
+	query := "SELECT id, nombre, precio, imagen, fecha_creacion FROM productos WHERE id = ?"
 
 	var producto Producto
 
@@ -218,6 +220,7 @@ func ObtenerProductoPorID(id int) (Producto, error) {
 		&producto.Nombre,
 		&producto.Precio,
 		&producto.Imagen,
+		&producto.FechaCreacion,
 	)
 
 	if err != nil {
@@ -264,4 +267,34 @@ func ActualizarProducto(producto Producto) error {
 	}
 
 	return nil
+}
+
+// OrdenarProductosAdmin ordena los productos del panel administrativo
+// por precio o por fecha de creación.
+func OrdenarProductosAdmin(lista []Producto, orden string) []Producto {
+
+	switch orden {
+
+	case "precio-menor":
+		sort.Slice(lista, func(i, j int) bool {
+			return lista[i].Precio < lista[j].Precio
+		})
+
+	case "precio-mayor":
+		sort.Slice(lista, func(i, j int) bool {
+			return lista[i].Precio > lista[j].Precio
+		})
+
+	case "fecha-reciente":
+		sort.Slice(lista, func(i, j int) bool {
+			return lista[i].FechaCreacion > lista[j].FechaCreacion
+		})
+
+	case "fecha-antigua":
+		sort.Slice(lista, func(i, j int) bool {
+			return lista[i].FechaCreacion < lista[j].FechaCreacion
+		})
+	}
+
+	return lista
 }

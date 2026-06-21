@@ -10,27 +10,27 @@
 
 <body>
     <!--
-Panel administrativo para registrar, editar
-y eliminar productos del sistema.
--->
+    Panel administrativo para registrar, editar
+    y eliminar productos del sistema.
+    -->
 
     <header>
         <h1>Panel Administrador</h1>
     </header>
 
-  <nav class="menu">
+    <nav class="menu">
 
-    <div>
-        <a href="/">Inicio</a>
-        <a href="/productos">Productos</a>
-        <a href="/carrito">Carrito</a>
-    </div>
+        <div>
+            <a href="/">Inicio</a>
+            <a href="/productos">Productos</a>
+            <a href="/carrito">Carrito</a>
+        </div>
 
-    <div>
-        <a href="/logout">Cerrar Sesión</a>
-    </div>
+        <div>
+            <a href="/logout">Cerrar Sesión</a>
+        </div>
 
-</nav>
+    </nav>
 
     <div class="container">
 
@@ -64,35 +64,53 @@ y eliminar productos del sistema.
 
         <h2>Productos Registrados</h2>
 
-        {{range .}}
+        <form action="/admin" method="GET" class="buscador">
 
-        <div class="card">
+    <select name="orden">
+        <option value="">Ordenar productos</option>
+        <option value="precio-menor">Precio: menor a mayor</option>
+        <option value="precio-mayor">Precio: mayor a menor</option>
+        <option value="fecha-reciente">Más recientes primero</option>
+        <option value="fecha-antigua">Más antiguos primero</option>
+    </select>
 
-            <img src="{{.Imagen}}" width="220">
-
-            <h3>{{.Nombre}}</h3>
-
-            <p>Precio: ${{.Precio}}</p>
-
-            <a href="/editar-producto?id={{.ID}}">
-    <button>
-        Editar Producto
+    <button type="submit">
+        Ordenar
     </button>
-</a>
 
-<br><br>
+</form>
 
-            <a href="/eliminar-producto?id={{.ID}}">
-                <button>
-                    Eliminar Producto
-                </button>
-            </a>
+        <div class="productos-grid">
+
+            {{range .}}
+
+            <div class="producto-card">
+
+                <img src="{{.Imagen}}" alt="{{.Nombre}}">
+
+                <h3>{{.Nombre}}</h3>
+
+                <p>Precio: ${{.Precio}}</p>
+
+                <a href="/editar-producto?id={{.ID}}">
+                    <button>
+                        Editar Producto
+                    </button>
+                </a>
+
+                <br><br>
+
+                <a href="/eliminar-producto?id={{.ID}}">
+                    <button>
+                        Eliminar Producto
+                    </button>
+                </a>
+
+            </div>
+
+            {{end}}
 
         </div>
-
-        <br>
-
-        {{end}}
 
     </div>
 

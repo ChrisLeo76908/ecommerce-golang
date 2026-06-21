@@ -16,6 +16,7 @@ import (
 	"ecommerce/internal/carrito"
 	"ecommerce/internal/database"
 	"ecommerce/internal/productos"
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -125,6 +126,10 @@ func agregarProducto(w http.ResponseWriter, r *http.Request) {
 
 	listaProductos, err := productos.ObtenerProductos()
 
+	orden := r.URL.Query().Get("orden")
+
+	listaProductos = productos.OrdenarProductosAdmin(listaProductos, orden)
+
 	if err != nil {
 		http.Error(w, "Error al obtener productos", http.StatusInternalServerError)
 		return
@@ -195,9 +200,20 @@ func carritoPagina(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, datos)
 }
 
+func sesionAdminActiva(r *http.Request) bool {
+
+	cookie, err := r.Cookie("admin")
+
+	if err != nil {
+		return false
+	}
+
+	return cookie.Value == "activo"
+}
+
 func adminPagina(w http.ResponseWriter, r *http.Request) {
 
-	if !sesionIniciada {
+	if !sesionAdminActiva(r) {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -238,7 +254,11 @@ func loginPagina(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	if usuario == "admin" && password == "1234" {
-		sesionIniciada = true
+		http.SetCookie(w, &http.Cookie{
+			Name:  "admin",
+			Value: "activo",
+			Path:  "/",
+		})
 		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 		return
 	}
@@ -248,7 +268,12 @@ func loginPagina(w http.ResponseWriter, r *http.Request) {
 
 func logout(w http.ResponseWriter, r *http.Request) {
 
-	sesionIniciada = false
+	http.SetCookie(w, &http.Cookie{
+		Name:   "admin",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
@@ -286,7 +311,7 @@ func guardarProducto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/productos", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
 func eliminarProductoAdmin(w http.ResponseWriter, r *http.Request) {
@@ -315,7 +340,7 @@ func eliminarProductoAdmin(w http.ResponseWriter, r *http.Request) {
 // luego busca el producto seleccionado por su ID.
 func editarProductoPagina(w http.ResponseWriter, r *http.Request) {
 
-	if !sesionIniciada {
+	if !sesionAdminActiva(r) {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -350,7 +375,7 @@ func editarProductoPagina(w http.ResponseWriter, r *http.Request) {
 // valida la información ingresada y actualiza el producto en MySQL.
 func actualizarProducto(w http.ResponseWriter, r *http.Request) {
 
-	if !sesionIniciada {
+	if !sesionAdminActiva(r) {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -413,6 +438,161 @@ func resumenCompraPagina(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, datos)
 }
 
+func responderJSON(w http.ResponseWriter, datos interface{}, estado int) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(estado)
+	json.NewEncoder(w).Encode(datos)
+}
+
+// Servicio 1: devuelve todos los productos registrados en MySQL.
+func apiObtenerProductos(w http.ResponseWriter, r *http.Request) {
+
+	listaProductos, err := productos.ObtenerProductos()
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": "No se pudieron obtener los productos"}, http.StatusInternalServerError)
+		return
+	}
+
+	responderJSON(w, listaProductos, http.StatusOK)
+}
+
+// Servicio 2: devuelve un producto específico según su ID.
+func apiObtenerProductoPorID(w http.ResponseWriter, r *http.Request) {
+
+	idTexto := r.URL.Query().Get("id")
+
+	id, err := strconv.Atoi(idTexto)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": "ID inválido"}, http.StatusBadRequest)
+		return
+	}
+
+	producto, err := productos.ObtenerProductoPorID(id)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": "Producto no encontrado"}, http.StatusNotFound)
+		return
+	}
+
+	responderJSON(w, producto, http.StatusOK)
+}
+
+// Servicio 3: busca productos por nombre.
+func apiBuscarProductos(w http.ResponseWriter, r *http.Request) {
+
+	nombre := r.URL.Query().Get("nombre")
+
+	resultado, err := productos.BuscarProductos(nombre)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": "Error al buscar productos"}, http.StatusInternalServerError)
+		return
+	}
+
+	responderJSON(w, resultado, http.StatusOK)
+}
+
+// Servicio 4: registra un nuevo producto usando JSON.
+func apiAgregarProducto(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		responderJSON(w, map[string]string{"error": "Método no permitido"}, http.StatusMethodNotAllowed)
+		return
+	}
+
+	var nuevoProducto productos.Producto
+
+	err := json.NewDecoder(r.Body).Decode(&nuevoProducto)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": "JSON inválido"}, http.StatusBadRequest)
+		return
+	}
+
+	err = productos.AgregarNuevoProducto(nuevoProducto)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+		return
+	}
+
+	responderJSON(w, map[string]string{"mensaje": "Producto agregado correctamente"}, http.StatusCreated)
+}
+
+// Servicio 5: actualiza un producto existente usando JSON.
+func apiEditarProducto(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPut {
+		responderJSON(w, map[string]string{"error": "Método no permitido"}, http.StatusMethodNotAllowed)
+		return
+	}
+
+	var productoActualizado productos.Producto
+
+	err := json.NewDecoder(r.Body).Decode(&productoActualizado)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": "JSON inválido"}, http.StatusBadRequest)
+		return
+	}
+
+	err = productos.ActualizarProducto(productoActualizado)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+		return
+	}
+
+	responderJSON(w, map[string]string{"mensaje": "Producto actualizado correctamente"}, http.StatusOK)
+}
+
+// Servicio 6: elimina un producto según su ID.
+func apiEliminarProducto(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodDelete {
+		responderJSON(w, map[string]string{"error": "Método no permitido"}, http.StatusMethodNotAllowed)
+		return
+	}
+
+	idTexto := r.URL.Query().Get("id")
+
+	id, err := strconv.Atoi(idTexto)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": "ID inválido"}, http.StatusBadRequest)
+		return
+	}
+
+	err = productos.EliminarProducto(id)
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+		return
+	}
+
+	responderJSON(w, map[string]string{"mensaje": "Producto eliminado correctamente"}, http.StatusOK)
+}
+
+// Servicio 7: devuelve los productos actuales del carrito.
+func apiObtenerCarrito(w http.ResponseWriter, r *http.Request) {
+
+	responderJSON(w, carrito.ObtenerCarrito(), http.StatusOK)
+}
+
+// Servicio 8: devuelve el último resumen de compra generado.
+func apiObtenerResumen(w http.ResponseWriter, r *http.Request) {
+
+	datos := map[string]interface{}{
+		"productos": carrito.UltimoResumen,
+		"total":     carrito.UltimoTotal,
+	}
+
+	responderJSON(w, datos, http.StatusOK)
+}
+
 func main() {
 
 	db := database.Conexion()
@@ -439,6 +619,16 @@ func main() {
 
 	http.HandleFunc("/login", loginPagina)
 	http.HandleFunc("/logout", logout)
+
+	// Servicios Web JSON
+	http.HandleFunc("/api/productos", apiObtenerProductos)
+	http.HandleFunc("/api/producto", apiObtenerProductoPorID)
+	http.HandleFunc("/api/buscar", apiBuscarProductos)
+	http.HandleFunc("/api/agregar-producto", apiAgregarProducto)
+	http.HandleFunc("/api/editar-producto", apiEditarProducto)
+	http.HandleFunc("/api/eliminar-producto", apiEliminarProducto)
+	http.HandleFunc("/api/carrito", apiObtenerCarrito)
+	http.HandleFunc("/api/resumen", apiObtenerResumen)
 
 	log.Println("Servidor ejecutándose en http://localhost:8080")
 
