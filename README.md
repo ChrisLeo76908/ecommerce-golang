@@ -1,66 +1,176 @@
 # Sistema de Gestión E-Commerce
 
-## Información del proyecto
+## Información del Proyecto
 
-**Autor:** Christian David Muñoz Tonguino  
-**Fecha:** 23/05/2026  
-**Descripción:** Sistema de gestión E-Commerce desarrollado en GoLang y MySQL, que permite administrar productos, carrito de compras y panel administrativo mediante una interfaz web dinámica.
+**Autor:** Christian David Muñoz Tonguino
+**Fecha:** 23/06/2026
 
-Proyecto desarrollado en GoLang y MySQL como parte de una práctica académica orientada al desarrollo de un sistema de gestión E-Commerce utilizando programación funcional y arquitectura modular.
+## Objetivo del Programa
 
-## Descripción
+Desarrollar una aplicación web de comercio electrónico utilizando GoLang y MySQL que permita la gestión de productos, clientes, compras y administración del sistema mediante una arquitectura modular, aplicando los conocimientos adquiridos durante la asignatura de Programación Funcional.
 
-El sistema permite gestionar una tienda virtual mediante una interfaz web dinámica, ofreciendo funcionalidades básicas de administración de productos y carrito de compras.
+## Descripción General
 
-## Funcionalidades principales
+El sistema permite administrar una tienda virtual especializada en productos tecnológicos orientados al gaming y alto rendimiento, incluyendo periféricos, monitores, sillas ergonómicas y accesorios informáticos.
 
-- Gestión completa de productos: agregar, visualizar, editar y eliminar.
-- Conexión con base de datos MySQL para almacenar productos.
-- Carrito de compras dinámico.
-- Resumen final de compra agrupando productos repetidos.
-- Cálculo de cantidades, subtotales y total general.
-- Búsqueda de productos por nombre.
-- Ordenamiento de productos por precio.
-- Paginación del catálogo de productos.
-- Visualización de productos en cuadrícula.
-- Panel administrador protegido con inicio de sesión.
-- Implementación de encapsulación mediante métodos en Producto.
-- Implementación de la interfaz ProductoRepository.
-- Manejo de errores y validaciones.
-- Comentarios en funcionalidades complejas.
+La aplicación integra funcionalidades para clientes y administradores, permitiendo gestionar productos, realizar compras, consultar historiales y consumir servicios web basados en JSON.
 
-## Tecnologías utilizadas
+---
 
-- GoLang
-- MySQL
-- HTML5
-- CSS3
-- GitHub
-- Visual Studio Code
+## Funcionalidades Principales
 
-## Librerías utilizadas
+### Gestión de Productos
 
-- net/http
-- html/template
-- database/sql
-- github.com/go-sql-driver/mysql
+* Registro de nuevos productos.
+* Edición de productos existentes.
+* Eliminación de productos.
+* Visualización de catálogo.
+* Búsqueda de productos por nombre.
+* Ordenamiento por precio.
+* Paginación de resultados.
 
-## Arquitectura del proyecto
+### Gestión de Clientes
 
-El proyecto está dividido en módulos independientes:
+* Registro de usuarios.
+* Inicio de sesión de clientes.
+* Cierre de sesión.
+* Validación de credenciales.
 
-- `productos` → gestión de productos
-- `carrito` → gestión del carrito de compras
-- `database` → conexión con MySQL
-- `templates` → vistas HTML
-- `static` → archivos CSS e imágenes
+### Gestión de Compras
 
-## Ejecución del proyecto
+* Carrito de compras dinámico.
+* Agregar productos al carrito.
+* Eliminar productos del carrito.
+* Resumen de compra.
+* Cálculo automático de subtotal.
+* Cálculo automático de IVA (15%).
+* Cálculo de total a pagar.
+* Registro de compras en MySQL.
 
-1. Clonar repositorio
-2. Abrir el proyecto en Visual Studio Code
-3. Configurar MySQL
+### Historial de Compras
+
+#### Cliente
+
+* Consulta de compras realizadas.
+* Visualización del detalle de cada compra.
+
+#### Administrador
+
+* Consulta de clientes que han realizado compras.
+* Búsqueda de clientes por nombre.
+* Visualización del historial individual de cada cliente.
+* Filtro de compras por rango de fechas.
+
+### Panel Administrativo
+
+* Acceso protegido mediante autenticación.
+* Gestión completa de productos.
+* Acceso a historial general de compras.
+
+### Servicios Web JSON
+
+El sistema incorpora servicios web que permiten intercambiar información mediante serialización JSON.
+
+Ejemplos:
+
+* Listado de productos.
+* Consulta de producto por ID.
+* Consulta del carrito.
+* Consulta del total del carrito.
+* Búsqueda de productos.
+* Productos ordenados por precio.
+* Información de clientes.
+* Historial de compras.
+
+---
+
+## Tecnologías Utilizadas
+
+* GoLang
+* MySQL
+* HTML5
+* CSS3
+* JSON
+* Git
+* GitHub
+* Visual Studio Code
+
+---
+
+## Librerías Utilizadas
+
+* net/http
+* html/template
+* database/sql
+* encoding/json
+* strconv
+* github.com/go-sql-driver/mysql
+
+---
+
+## Arquitectura del Proyecto
+
+### Módulos Principales
+
+* productos → gestión de productos
+* carrito → gestión del carrito
+* usuarios → gestión de clientes
+* compras → gestión de compras
+* database → conexión MySQL
+* templates → vistas HTML
+* static → archivos CSS e imágenes
+
+---
+
+## Conceptos Aplicados
+
+### Unidad 1
+
+* Programación funcional.
+* Funciones y modularización.
+
+### Unidad 2
+
+* Estructuras y métodos.
+* Encapsulación.
+* Interfaces.
+
+### Unidad 3
+
+* Manejo de bases de datos MySQL.
+* Persistencia de información.
+
+### Unidad 4
+
+* Servicios Web.
+* Serialización JSON.
+* Aplicaciones Web con GoLang.
+
+---
+
+## Ejecución del Proyecto
+
+1. Clonar el repositorio.
+2. Abrir el proyecto en Visual Studio Code.
+3. Configurar la base de datos MySQL.
 4. Ejecutar:
+
+```bash
+go run cmd/main.go
+```
+
+5. Abrir el navegador en:
+
+```text
+http://localhost:8080
+```
+
+---
+
+## Repositorio
+
+El código fuente completo del proyecto se encuentra almacenado en GitHub como parte de la entrega final de la asignatura.
+
 
 ```bash
 go run cmd/main.go
