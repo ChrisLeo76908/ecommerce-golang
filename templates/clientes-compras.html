@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Clientes con Compras</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Clientes con Compras</h1>
+</header>
+
+<nav class="menu">
+    <div>
+        <a href="/">Inicio</a>
+        <a href="/admin">Panel Admin</a>
+        <a href="/productos">Productos</a>
+    </div>
+
+    <div>
+        <a href="/logout">Cerrar Sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="resumen-card">
+
+        <h2>Buscar Cliente</h2>
+
+        <form action="/admin/clientes-compras" method="GET" class="buscador">
+            <input type="text" name="buscar" placeholder="Buscar cliente por nombre" value="{{.Busqueda}}">
+            <button type="submit">Buscar</button>
+        </form>
+
+        <h2>Clientes que han comprado</h2>
+
+        {{range .Clientes}}
+
+        <div class="item-carrito">
+
+            <span>
+                <strong>{{.Nombre}}</strong> - {{.Correo}}
+            </span>
+
+            <a href="/admin/historial-cliente?id={{.ID}}">
+                <button>Ver Historial</button>
+            </a>
+
+        </div>
+
+        {{else}}
+
+        <p>No se encontraron clientes con compras registradas.</p>
+
+        {{end}}
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

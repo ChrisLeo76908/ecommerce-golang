@@ -37,7 +37,7 @@ func inicio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl.Execute(w, datosCliente())
+	tmpl.Execute(w, datosCliente(r))
 }
 
 // paginaProductos gestiona la visualización del catálogo.
@@ -119,6 +119,7 @@ func paginaProductos(w http.ResponseWriter, r *http.Request) {
 		"Orden":           orden,
 		"ClienteActivo":   clienteActual.ID != 0,
 		"ClienteNombre":   clienteActual.Nombre,
+		"AdminActivo":     sesionAdminActiva(r),
 	}
 	tmpl.Execute(w, datos)
 }
@@ -198,14 +199,29 @@ func finalizarCompra(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	productosPorPagina := 10
+
+	paginasResumen := [][]carrito.ResumenItem{}
+
+	for i := 0; i < len(resumen); i += productosPorPagina {
+		fin := i + productosPorPagina
+
+		if fin > len(resumen) {
+			fin = len(resumen)
+		}
+
+		paginasResumen = append(paginasResumen, resumen[i:fin])
+	}
+
 	datos := map[string]interface{}{
-		"Productos":     resumen,
-		"Subtotal":      subtotal,
-		"IVA":           iva,
-		"Total":         total,
-		"Cliente":       clienteActual.Nombre,
-		"ClienteActivo": true,
-		"ClienteNombre": clienteActual.Nombre,
+		"PaginasResumen": paginasResumen,
+		"Subtotal":       subtotal,
+		"IVA":            iva,
+		"Total":          total,
+		"Cliente":        clienteActual.Nombre,
+		"ClienteActivo":  true,
+		"ClienteNombre":  clienteActual.Nombre,
+		"AdminActivo":    sesionAdminActiva(r),
 	}
 
 	carrito.VaciarCarrito()
@@ -227,6 +243,7 @@ func carritoPagina(w http.ResponseWriter, r *http.Request) {
 		"Total":         carrito.CalcularTotal(),
 		"ClienteActivo": clienteActual.ID != 0,
 		"ClienteNombre": clienteActual.Nombre,
+		"AdminActivo":   sesionAdminActiva(r),
 	}
 
 	tmpl.Execute(w, datos)
@@ -283,7 +300,7 @@ func loginPagina(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		tmpl.Execute(w, datosCliente())
+		tmpl.Execute(w, datosCliente(r))
 		return
 	}
 
@@ -469,8 +486,13 @@ func resumenCompraPagina(w http.ResponseWriter, r *http.Request) {
 	}
 
 	datos := map[string]interface{}{
-		"Productos": carrito.UltimoResumen,
-		"Total":     carrito.UltimoTotal,
+		"Productos":     carrito.UltimoResumen,
+		"Subtotal":      carrito.UltimoSubtotal,
+		"IVA":           carrito.UltimoIVA,
+		"Total":         carrito.UltimoTotal,
+		"ClienteActivo": clienteActual.ID != 0,
+		"ClienteNombre": clienteActual.Nombre,
+		"AdminActivo":   sesionAdminActiva(r),
 	}
 
 	tmpl.Execute(w, datos)
@@ -716,11 +738,172 @@ func logoutCliente(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func datosCliente() map[string]interface{} {
+func datosCliente(r *http.Request) map[string]interface{} {
 	return map[string]interface{}{
 		"ClienteActivo": clienteActual.ID != 0,
 		"ClienteNombre": clienteActual.Nombre,
+		"AdminActivo":   sesionAdminActiva(r),
 	}
+}
+
+func agregarProductoAjax(w http.ResponseWriter, r *http.Request) {
+
+	id := r.URL.Query().Get("id")
+
+	listaProductos, err := productos.ObtenerProductos()
+
+	if err != nil {
+		responderJSON(w, map[string]string{"error": "Error al obtener productos"}, http.StatusInternalServerError)
+		return
+	}
+
+	for _, producto := range listaProductos {
+
+		if id == strconv.Itoa(producto.ID) {
+			carrito.AgregarProducto(producto)
+			responderJSON(w, map[string]string{"mensaje": "Producto agregado al carrito"}, http.StatusOK)
+			return
+		}
+	}
+
+	responderJSON(w, map[string]string{"error": "Producto no encontrado"}, http.StatusNotFound)
+}
+
+func historialClientePagina(w http.ResponseWriter, r *http.Request) {
+
+	if clienteActual.ID == 0 {
+		http.Redirect(w, r, "/login-cliente", http.StatusSeeOther)
+		return
+	}
+
+	listaCompras, err := compras.ObtenerComprasPorUsuario(clienteActual.ID)
+
+	if err != nil {
+		http.Error(w, "Error al obtener historial de compras", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("templates/historial.html")
+
+	if err != nil {
+		http.Error(w, "Error al cargar historial", http.StatusInternalServerError)
+		return
+	}
+
+	datos := map[string]interface{}{
+		"Titulo":        "Mis Compras",
+		"Compras":       listaCompras,
+		"ClienteActivo": true,
+		"ClienteNombre": clienteActual.Nombre,
+		"AdminActivo":   false,
+	}
+
+	tmpl.Execute(w, datos)
+}
+
+func historialAdminPagina(w http.ResponseWriter, r *http.Request) {
+
+	if !sesionAdminActiva(r) {
+		http.Redirect(w, r, "/login-admin", http.StatusSeeOther)
+		return
+	}
+
+	listaCompras, err := compras.ObtenerTodasLasCompras()
+
+	if err != nil {
+		http.Error(w, "Error al obtener historial general", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("templates/historial.html")
+
+	if err != nil {
+		http.Error(w, "Error al cargar historial", http.StatusInternalServerError)
+		return
+	}
+
+	datos := map[string]interface{}{
+		"Titulo":        "Historial General de Compras",
+		"Compras":       listaCompras,
+		"ClienteActivo": false,
+		"ClienteNombre": "",
+		"AdminActivo":   true,
+	}
+
+	tmpl.Execute(w, datos)
+}
+
+func clientesComprasAdminPagina(w http.ResponseWriter, r *http.Request) {
+
+	if !sesionAdminActiva(r) {
+		http.Redirect(w, r, "/login-admin", http.StatusSeeOther)
+		return
+	}
+
+	busqueda := r.URL.Query().Get("buscar")
+
+	clientes, err := compras.ObtenerClientesConCompras(busqueda)
+
+	if err != nil {
+		http.Error(w, "Error al obtener clientes con compras", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("templates/clientes-compras.html")
+
+	if err != nil {
+		http.Error(w, "Error al cargar clientes con compras", http.StatusInternalServerError)
+		return
+	}
+
+	datos := map[string]interface{}{
+		"Clientes": clientes,
+		"Busqueda": busqueda,
+	}
+
+	tmpl.Execute(w, datos)
+}
+
+func historialClienteAdminPagina(w http.ResponseWriter, r *http.Request) {
+
+	if !sesionAdminActiva(r) {
+		http.Redirect(w, r, "/login-admin", http.StatusSeeOther)
+		return
+	}
+
+	idTexto := r.URL.Query().Get("id")
+	fechaInicio := r.URL.Query().Get("inicio")
+	fechaFin := r.URL.Query().Get("fin")
+
+	usuarioID, err := strconv.Atoi(idTexto)
+
+	if err != nil {
+		http.Error(w, "ID de cliente inválido", http.StatusBadRequest)
+		return
+	}
+
+	listaCompras, err := compras.ObtenerComprasPorUsuarioYFecha(usuarioID, fechaInicio, fechaFin)
+
+	if err != nil {
+		http.Error(w, "Error al obtener historial del cliente", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("templates/historial-cliente-admin.html")
+
+	if err != nil {
+		http.Error(w, "Error al cargar historial del cliente", http.StatusInternalServerError)
+		return
+	}
+
+	datos := map[string]interface{}{
+		"Compras":     listaCompras,
+		"ClienteID":   usuarioID,
+		"FechaInicio": fechaInicio,
+		"FechaFin":    fechaFin,
+	}
+
+	tmpl.Execute(w, datos)
 }
 
 func main() {
@@ -740,6 +923,8 @@ func main() {
 	http.HandleFunc("/eliminar", eliminarProducto)
 	http.HandleFunc("/finalizar", finalizarCompra)
 	http.HandleFunc("/resumen", resumenCompraPagina)
+	http.HandleFunc("/historial", historialClientePagina)
+	http.HandleFunc("/admin/historial", historialAdminPagina)
 
 	http.HandleFunc("/admin", adminPagina)
 	http.HandleFunc("/guardar-producto", guardarProducto)
@@ -760,12 +945,15 @@ func main() {
 	http.HandleFunc("/api/eliminar-producto", apiEliminarProducto)
 	http.HandleFunc("/api/carrito", apiObtenerCarrito)
 	http.HandleFunc("/api/resumen", apiObtenerResumen)
+	http.HandleFunc("/api/agregar-carrito", agregarProductoAjax)
 
 	http.HandleFunc("/registro-cliente", registroClientePagina)
 	http.HandleFunc("/registrar-cliente", registrarCliente)
 	http.HandleFunc("/login-cliente", loginClientePagina)
 	http.HandleFunc("/validar-cliente", validarCliente)
 	http.HandleFunc("/logout-cliente", logoutCliente)
+	http.HandleFunc("/admin/clientes-compras", clientesComprasAdminPagina)
+	http.HandleFunc("/admin/historial-cliente", historialClienteAdminPagina)
 
 	log.Println("Servidor ejecutándose en http://localhost:8080")
 

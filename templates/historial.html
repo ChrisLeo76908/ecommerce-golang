@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Compras</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Historial de Compras</h1>
+    </header>
+
+    <nav class="menu">
+
+        <div>
+            <a href="/">Inicio</a>
+            <a href="/productos">Productos</a>
+            <a href="/carrito">Carrito</a>
+        </div>
+
+        <div>
+            {{if .AdminActivo}}
+
+                <a href="/admin">Panel Admin</a>
+                <a href="/logout">Cerrar Sesión</a>
+
+            {{else if .ClienteActivo}}
+
+                <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+                <a href="/historial">Mis Compras</a>
+                <a href="/logout-cliente">Cerrar Sesión</a>
+
+            {{else}}
+
+                <a href="/login">Login</a>
+
+            {{end}}
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="resumen-card">
+
+            <h2>{{.Titulo}}</h2>
+
+            {{range .Compras}}
+
+            <div class="card-compra">
+
+                <h3>Compra #{{.ID}}</h3>
+
+                {{if .Cliente}}
+                <p><strong>Cliente:</strong> {{.Cliente}}</p>
+                {{end}}
+
+                <p><strong>Fecha:</strong> {{.Fecha}}</p>
+
+                <table class="tabla-resumen">
+
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+
+                    {{range .Detalles}}
+
+                    <tr>
+                        <td>{{.Producto}}</td>
+                        <td>{{.Cantidad}}</td>
+                        <td>${{printf "%.2f" .PrecioUnitario}}</td>
+                        <td>${{printf "%.2f" .Subtotal}}</td>
+                    </tr>
+
+                    {{end}}
+
+                </table>
+
+                <div class="totales-compra">
+                    <p><strong>Subtotal:</strong> ${{printf "%.2f" .Subtotal}}</p>
+                    <p><strong>IVA 15%:</strong> ${{printf "%.2f" .IVA}}</p>
+                    <h3>Total: ${{printf "%.2f" .Total}}</h3>
+                </div>
+
+            </div>
+
+            <br>
+
+            {{else}}
+
+            <p>No existen compras registradas.</p>
+
+            {{end}}
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

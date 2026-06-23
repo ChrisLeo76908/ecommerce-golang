@@ -1,188 +1,348 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-header {
-    background-color: #111827;
-    color: white;
-    padding: 20px;
-    text-align: center;
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#dbeafe,#ffffff);
+    min-height:100vh;
+    color:#1f2937;
 }
 
-.menu {
+/* HEADER */
+
+header{
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    color:white;
+    text-align:center;
+    padding:30px;
+    box-shadow:0 4px 12px rgba(0,0,0,.2);
+}
+
+header h1{
+    font-size:2rem;
+}
+
+/* MENU */
+
+.menu{
+    background:#0f172a;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 30px;
+    box-shadow:0 4px 10px rgba(0,0,0,.15);
+}
+
+.menu a{
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    margin-right:20px;
+    transition:.3s;
+}
+
+.menu a:hover{
+    color:#fbbf24;
+}
+
+.usuario-activo{
+    color:#fbbf24 !important;
+    font-weight:bold;
+    font-size:15px;
+    margin-right:15px;
+}
+
+/* CONTENEDOR */
+
+.container{
+    width:95%;
+    max-width:1400px;
+    margin:auto;
+    padding:30px 0;
+}
+
+/* TARJETAS GENERALES */
+
+.card,
+.resumen-card{
+    background:white;
+    border-radius:18px;
+    box-shadow:0 8px 25px rgba(0,0,0,.12);
+    padding:25px;
+}
+
+/* PRODUCTOS */
+
+.productos-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:25px;
+}
+
+.producto-card{
+    background:white;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 8px 20px rgba(0,0,0,.12);
+    transition:.3s;
+    padding:15px;
+}
+
+.producto-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 15px 35px rgba(0,0,0,.2);
+}
+
+.producto-card img{
+    width:100%;
+    height:180px;
+    object-fit:contain;
+    background:#f8fafc;
+    border-radius:12px;
+}
+
+.producto-card h2,
+.producto-card h3{
+    margin-top:10px;
+    color:#1e3a8a;
+}
+
+.producto-card p{
+    margin:10px 0;
+    color:#dc2626;
+    font-weight:bold;
+    font-size:18px;
+}
+
+/* BOTONES */
+
+button{
+    background:#f97316;
+    color:white;
+    border:none;
+    border-radius:10px;
+    padding:12px 18px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.3s;
+}
+
+button:hover{
+    background:#ea580c;
+    transform:scale(1.03);
+}
+
+/* INPUTS */
+
+input,
+select{
+    width:100%;
+    padding:12px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    margin-bottom:12px;
+}
+
+input:focus,
+select:focus{
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 8px rgba(37,99,235,.3);
+}
+
+/* BUSCADOR */
+
+.buscador{
+    margin-bottom:25px;
+    text-align:center;
+}
+
+/* PAGINACION */
+
+.paginacion{
+    text-align:center;
+    margin-top:30px;
+}
+
+.paginacion a{
+    background:#2563eb;
+    color:white;
+    padding:10px 15px;
+    border-radius:8px;
+    text-decoration:none;
+    margin:0 5px;
+}
+
+.paginacion a:hover{
+    background:#1d4ed8;
+}
+
+/* TABLA RESUMEN */
+
+.tabla-resumen{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+.tabla-resumen th{
+    background:#2563eb;
+    color:white;
+    padding:15px;
+}
+
+.tabla-resumen td{
+    padding:12px;
+    border:1px solid #ddd;
+}
+
+.tabla-resumen tr:nth-child(even){
+    background:#f8fafc;
+}
+
+/* TOTALES */
+
+.totales-compra{
+    width:350px;
+    margin-left:auto;
+    margin-top:25px;
+    background:#f8fafc;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+.totales-compra h3{
+    margin-top:10px;
+    color:#dc2626;
+}
+
+/* LOGIN Y FORMULARIOS */
+
+.card{
+    max-width:500px;
+    margin:auto;
+}
+
+.card h2{
+    margin-bottom:20px;
+    color:#1e3a8a;
+}
+
+/* RESUMEN */
+
+.resumen-card{
+    max-width:1000px;
+    margin:auto;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
+
+    .menu{
+        flex-direction:column;
+        gap:10px;
+    }
+
+    .productos-grid{
+        grid-template-columns:1fr;
+    }
+
+    .totales-compra{
+        width:100%;
+    }
+}
+
+.item-carrito {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #222;
-    padding: 15px 30px;
-}
-
-.menu a {
-    color: white;
-    text-decoration: none;
-    margin-right: 20px;
-    font-weight: bold;
-}
-
-.menu a:hover {
-    color: #00bfff;
-}
-
-nav a {
-    color: white;
-    text-decoration: none;
-    margin: 15px;
-    font-weight: bold;
-}
-
-nav a:hover {
-    color: #60a5fa;
-}
-
-.container {
-    padding: 40px;
-    text-align: center;
-}
-
-.card {
-    background-color: white;
-    width: 300px;
-    margin: auto;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px gray;
-}
-
-button {
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #1d4ed8;
-}
-
-img {
-    border-radius: 10px;
     margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
 }
 
-.card {
-    margin-bottom: 30px;
+.item-carrito span {
+    font-size: 18px;
 }
 
-input {
-    width: 80%;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid gray;
+.item-carrito {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #d1d5db;
 }
 
-.productos-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 25px;
-    margin-top: 30px;
+.item-carrito span {
+    font-size: 18px;
+    text-align: left;
+    flex: 1;
 }
 
-.producto-card {
-    background-color: white;
-    padding: 18px;
+.card-compra {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 35px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    border-left: 6px solid #2563eb;
+}
+
+.intro-texto {
+    max-width: 1200px;
+    margin: 20px auto;
+    line-height: 1.8;
+    font-size: 17px;
+    text-align: center;
+    color: #374151;
+}
+
+.beneficios {
+    max-width: 1200px;
+    margin: 30px auto;
+    text-align: center;
+}
+
+.beneficios h3 {
+    color: #1e3a8a;
+    margin-bottom: 20px;
+}
+
+.beneficios ul {
+    list-style: none;
+    padding: 0;
+}
+
+.beneficios li {
+    display: inline-block;
+    width: 45%;
+    margin: 12px;
+    padding: 15px;
+    background: white;
     border-radius: 12px;
-    box-shadow: 0px 0px 8px gray;
+    box-shadow: 0 4px 10px rgba(0,0,0,.1);
+}
+
+.card-inicio {
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.12);
+    padding: 40px;
+    width: 95%;
+    max-width: 1300px;
+    margin: auto;
+}
+
+.card-inicio h2 {
     text-align: center;
-}
-
-.producto-card img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 10px;
-}
-
-.producto-card h2 {
-    font-size: 18px;
-}
-
-.paginacion {
-    margin-top: 30px;
-    text-align: center;
-}
-
-.paginacion span {
-    margin: 0 15px;
-    font-weight: bold;
-}
-
-.buscador {
-    text-align: center;
-    margin: 20px 0;
-}
-
-.buscador input {
-    padding: 10px;
-    width: 300px;
-    border-radius: 6px;
-}
-
-.buscador button {
-    padding: 10px 15px;
-    cursor: pointer;
-}
-
-.buscador {
-    text-align: center;
-    margin: 25px 0;
-}
-
-.buscador input {
-    width: 320px;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #999;
-    font-size: 16px;
-}
-
-.buscador button {
-    padding: 12px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.tabla-resumen {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.tabla-resumen th,
-.tabla-resumen td {
-    border: 1px solid #ccc;
-    padding: 12px;
-    text-align: center;
-}
-
-.tabla-resumen th {
-    background-color: #f2f2f2;
-}
-
-.totales-compra {
-    text-align: right;
-    margin-top: 25px;
-    font-size: 18px;
-}
-
-.menu .usuario-activo,
-nav .usuario-activo,
-.usuario-activo {
-    color: white !important;
-    font-weight: bold;
-    margin-right: 15px;
+    color: #1e3a8a;
+    margin-bottom: 25px;
+    font-size: 32px;
 }

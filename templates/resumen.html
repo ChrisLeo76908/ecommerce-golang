@@ -27,25 +27,29 @@
         </div>
 
         <div>
-            <div>
-                {{if .ClienteActivo}}
-                    
-                    <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
-                    <a href="/logout-cliente">Cerrar Sesión</a>
-                    
-                {{else}}
-                
-                    <a href="/login">Login</a>
-                    
-                {{end}}
-            </div>
+            {{if .AdminActivo}}
+
+                <a href="/admin">Panel Admin</a>
+                <a href="/logout">Cerrar Sesión</a>
+
+            {{else if .ClienteActivo}}
+
+                <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+                <a href="/historial">Mis Compras</a>
+                <a href="/logout-cliente">Cerrar Sesión</a>
+
+            {{else}}
+
+                <a href="/login">Login</a>
+
+            {{end}}
         </div>
 
     </nav>
 
     <div class="container">
 
-        <div class="card">
+        <div class="resumen-card">
 
             <h2>Compra finalizada correctamente</h2>
 
@@ -53,27 +57,33 @@
 
             <p>Detalle de productos comprados:</p>
 
-            <table class="tabla-resumen">
+            {{range .PaginasResumen}}
 
-                <tr>
-                    <th>Cantidad</th>
-                    <th>Producto</th>
-                    <th>Precio unitario</th>
-                    <th>Subtotal</th>
-                </tr>
+        <table class="tabla-resumen">
 
-                {{range .Productos}}
+            <tr>
+                <th>Cantidad</th>
+                <th>Producto</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+            </tr>
 
-                <tr>
-                    <td>{{.Cantidad}}</td>
-                    <td>{{.Nombre}}</td>
-                    <td>${{printf "%.2f" .Precio}}</td>
-                    <td>${{printf "%.2f" .Subtotal}}</td>
-                </tr>
+            {{range .}}
 
-                {{end}}
+            <tr>
+                <td>{{.Cantidad}}</td>
+                <td>{{.Nombre}}</td>
+                <td>${{printf "%.2f" .Precio}}</td>
+                <td>${{printf "%.2f" .Subtotal}}</td>
+            </tr>
 
-            </table>
+            {{end}}
+
+        </table>
+
+        <br>
+
+{{end}}
 
             <div class="totales-compra">
 

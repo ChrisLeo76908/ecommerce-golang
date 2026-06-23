@@ -11,7 +11,7 @@
 <body>
 
     <header>
-        <h1>Bienvenido a Mi E-Commerce</h1>
+        <h1>Performance Gaming Solutions</h1>
     </header>
 
    <nav class="menu">
@@ -23,9 +23,15 @@
     </div>
 
     <div>
-        {{if .ClienteActivo}}
+        {{if .AdminActivo}}
+
+            <a href="/admin">Panel Admin</a>
+            <a href="/logout">Cerrar Sesión</a>
+
+        {{else if .ClienteActivo}}
 
             <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+            <a href="/historial">Mis Compras</a>
             <a href="/logout-cliente">Cerrar Sesión</a>
 
         {{else}}
@@ -39,32 +45,33 @@
 
     <div class="container">
 
-        <div class="card">
+        <div class="card-inicio">
 
-            <h2>Tienda Online de Tecnología</h2>
+            <h2>Tecnología de Alto Rendimiento para Gamers y Profesionales</h2>
 
-            <p>
-                Bienvenido a nuestro sistema de gestión E-Commerce
-                desarrollado en GoLang.
+            <p class="intro-texto">
+                Bienvenido a Elite Tech Store, una plataforma especializada en la comercialización de periféricos,
+                accesorios y equipamiento tecnológico de alta calidad. Nuestro objetivo es ofrecer soluciones que
+                combinen rendimiento, comodidad y diseño para gamers, creadores de contenido y profesionales.
             </p>
 
-            <p>
-                Aquí podrás:
+            <div class="beneficios">
+
+                <h3>Productos Destacados</h3>
+
+                <ul>
+                    <li>🖥️ Monitores de alto rendimiento</li>
+                    <li>⌨️ Teclados y mouse gaming</li>
+                    <li>🪑 Sillas ergonómicas</li>
+                    <li>🎧 Accesorios y periféricos especializados</li>
+                </ul>
+
+            </div>
+
+            <p class="intro-texto">
+                Explore nuestro catálogo y encuentre la tecnología ideal para potenciar su experiencia de trabajo,
+                estudio o entretenimiento.
             </p>
-
-            <ul style="text-align:left;">
-
-                <li>Ver productos</li>
-
-                <li>Agregar productos al carrito</li>
-
-                <li>Eliminar productos</li>
-
-                <li>Administrar inventario</li>
-
-                <li>Gestionar productos desde Admin</li>
-
-            </ul>
 
             <br>
 

@@ -27,17 +27,23 @@ Incluye búsqueda, ordenamiento y paginación.
         </div>
 
         <div>
-            {{if .ClienteActivo}}
-            
-            <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
-            <a href="/logout-cliente">Cerrar Sesión</a>
-            
-        {{else}}
-        
-            <a href="/login">Login</a>
+            {{if .AdminActivo}}
 
-        {{end}}
-    </div>
+                <a href="/admin">Panel Admin</a>
+                <a href="/logout">Cerrar Sesión</a>
+
+            {{else if .ClienteActivo}}
+
+                <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+                <a href="/historial">Mis Compras</a>
+                <a href="/logout-cliente">Cerrar Sesión</a>
+
+            {{else}}
+
+                <a href="/login">Login</a>
+
+            {{end}}
+        </div>
 
     </nav>
 
@@ -82,9 +88,9 @@ Incluye búsqueda, ordenamiento y paginación.
                 
                 <p>Precio: ${{.Precio}}</p>
                 
-                <a href="/agregar?id={{.ID}}&buscar={{$.Busqueda}}&orden={{$.Orden}}&pagina={{$.PaginaActual}}">
-                    <button>Agregar al carrito</button>
-                </a>
+                <button onclick="agregarAlCarrito('{{.ID}}')">
+                    Agregar al carrito
+                </button>
             
             </div>
 
@@ -111,6 +117,19 @@ Incluye búsqueda, ordenamiento y paginación.
         </div>
 
     </div>
+
+    <script>
+        function agregarAlCarrito(id) {
+            fetch('/api/agregar-carrito?id=' + id)
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.mensaje || data.error);
+                })
+                .catch(() => {
+                    alert('Error al agregar producto al carrito');
+                });
+        }
+    </script>
 
 </body>
 

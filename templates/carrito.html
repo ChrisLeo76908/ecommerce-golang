@@ -27,10 +27,15 @@ al carrito y el total acumulado.
     </div>
 
     <div>
-        
-        {{if .ClienteActivo}}
-        
+        {{if .AdminActivo}}
+
+            <a href="/admin">Panel Admin</a>
+            <a href="/logout">Cerrar Sesión</a>
+
+        {{else if .ClienteActivo}}
+
             <span class="usuario-activo">Bienvenido, {{.ClienteNombre}}</span>
+            <a href="/historial">Mis Compras</a>
             <a href="/logout-cliente">Cerrar Sesión</a>
 
         {{else}}
@@ -50,13 +55,17 @@ al carrito y el total acumulado.
 
             {{range .Productos}}
 
-            <p>
-    {{.Nombre}} - ${{.Precio}}
+            <div class="item-carrito">
 
-    <a href="/eliminar?id={{.ID}}">
-        <button>Eliminar</button>
-    </a>
-</p>
+                <span>
+                    {{.Nombre}} - ${{.Precio}}
+                </span>
+
+                <a href="/eliminar?id={{.ID}}">
+                    <button>Eliminar</button>
+                </a>
+
+            </div>
 
             {{end}}
 

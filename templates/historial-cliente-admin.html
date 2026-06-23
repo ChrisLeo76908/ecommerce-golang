@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Historial del Cliente</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Historial del Cliente</h1>
+</header>
+
+<nav class="menu">
+    <div>
+        <a href="/">Inicio</a>
+        <a href="/admin">Panel Admin</a>
+        <a href="/admin/clientes-compras">Clientes con Compras</a>
+    </div>
+
+    <div>
+        <a href="/logout">Cerrar Sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="resumen-card">
+
+        <h2>Historial de compras</h2>
+
+        <form action="/admin/historial-cliente" method="GET" class="buscador">
+
+            <input type="hidden" name="id" value="{{.ClienteID}}">
+
+            <input type="date" name="inicio" value="{{.FechaInicio}}">
+
+            <input type="date" name="fin" value="{{.FechaFin}}">
+
+            <button type="submit">Filtrar</button>
+
+        </form>
+
+        {{range .Compras}}
+
+        <div class="card-compra">
+
+            <h3>Compra #{{.ID}}</h3>
+
+            <p><strong>Fecha:</strong> {{.Fecha}}</p>
+
+            <table class="tabla-resumen">
+
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                </tr>
+
+                {{range .Detalles}}
+
+                <tr>
+                    <td>{{.Producto}}</td>
+                    <td>{{.Cantidad}}</td>
+                    <td>${{printf "%.2f" .PrecioUnitario}}</td>
+                    <td>${{printf "%.2f" .Subtotal}}</td>
+                </tr>
+
+                {{end}}
+
+            </table>
+
+            <div class="totales-compra">
+                <p><strong>Subtotal:</strong> ${{printf "%.2f" .Subtotal}}</p>
+                <p><strong>IVA 15%:</strong> ${{printf "%.2f" .IVA}}</p>
+                <h3>Total: ${{printf "%.2f" .Total}}</h3>
+            </div>
+
+        </div>
+
+        {{else}}
+
+        <p>No existen compras en el rango seleccionado.</p>
+
+        {{end}}
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
