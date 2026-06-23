@@ -7,7 +7,7 @@
 
 ## Objetivo del Programa
 
-Desarrollar una aplicación web de comercio electrónico utilizando GoLang y MySQL que permita la gestión de productos, clientes, compras y administración del sistema mediante una arquitectura modular, aplicando los conocimientos adquiridos durante la asignatura de Programación Funcional.
+Desarrollar una aplicación web de comercio electrónico utilizando GoLang y MySQL que permita la gestión de productos, clientes, compras y administración del sistema mediante una arquitectura modular, aplicando los conocimientos adquiridos durante la asignatura de Programación Orientada a Objetos.
 
 ## Descripción General
 
